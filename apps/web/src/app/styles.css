@@ -1,0 +1,11 @@
+:root { color-scheme: light; font-family: system-ui, sans-serif; background: #f6f4ef; color: #182820; }
+* { box-sizing: border-box; }
+body { margin: 0; }
+main { max-width: 860px; margin: 8vh auto; padding: 2rem; }
+h1 { margin-bottom: .35rem; }
+.card { background: white; border: 1px solid #d9e0d8; border-radius: 16px; padding: 1.5rem; margin-top: 1.5rem; }
+label { display: block; margin: 1rem 0 .35rem; }
+input { width: 100%; padding: .75rem; border: 1px solid #a9b8ad; border-radius: 8px; }
+button { margin-top: 1rem; padding: .8rem 1.2rem; border: 0; border-radius: 8px; background: #265942; color: white; cursor: pointer; }
+.muted { color: #56675b; }
+.error { color: #a22; }

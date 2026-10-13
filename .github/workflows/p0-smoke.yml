@@ -1,0 +1,39 @@
+name: P0 smoke
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  foundation:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+      - run: npm ci
+      - run: npm run build
+        env:
+          NEXT_TELEMETRY_DISABLED: "1"
+      - run: npm run typecheck
+      - name: Create local test environment
+        run: |
+          {
+            echo "POSTGRES_PASSWORD=DeckCiDatabase123"
+            echo "DATABASE_URL=postgresql://deckstudio:DeckCiDatabase123@localhost:5432/deckstudio?schema=public"
+            echo "REDIS_URL=redis://localhost:6379"
+            echo "NEXTAUTH_URL=http://localhost:3000"
+            echo "NEXTAUTH_SECRET=$(openssl rand -hex 32)"
+            echo "SEED_ADMIN_EMAIL=owner@example.test"
+            echo "SEED_ADMIN_PASSWORD=DeckCiOwnerPassword123"
+          } > .env
+      - run: docker compose -f infra/compose.yaml up --build --wait
+      - run: node --env-file=.env scripts/smoke.mjs
+      - if: always()
+        run: docker compose -f infra/compose.yaml logs --no-color --tail=100
+      - if: always()
+        run: docker compose -f infra/compose.yaml down -v

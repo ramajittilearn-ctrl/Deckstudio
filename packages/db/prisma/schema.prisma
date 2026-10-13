@@ -1,0 +1,64 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserStatus {
+  ACTIVE
+  DISABLED
+}
+
+enum MembershipRole {
+  OWNER
+  EDITOR
+  REVIEWER
+}
+
+model User {
+  id           String           @id @default(cuid())
+  email        String           @unique
+  passwordHash String           @map("password_hash")
+  status       UserStatus       @default(ACTIVE)
+  createdAt    DateTime         @default(now()) @map("created_at")
+  memberships  UserMembership[]
+
+  @@map("users")
+}
+
+model Workspace {
+  id          String           @id @default(cuid())
+  name        String
+  createdAt   DateTime         @default(now()) @map("created_at")
+  memberships UserMembership[]
+  brands      Brand[]
+
+  @@map("workspaces")
+}
+
+model UserMembership {
+  userId      String         @map("user_id")
+  workspaceId String         @map("workspace_id")
+  role        MembershipRole
+  user        User           @relation(fields: [userId], references: [id])
+  workspace   Workspace      @relation(fields: [workspaceId], references: [id])
+
+  @@id([userId, workspaceId])
+  @@map("user_memberships")
+}
+
+model Brand {
+  id          String    @id @default(cuid())
+  workspaceId String    @map("workspace_id")
+  name        String
+  locale      String    @default("th-TH")
+  timezone    String    @default("Asia/Bangkok")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  workspace   Workspace @relation(fields: [workspaceId], references: [id])
+
+  @@unique([workspaceId, name])
+  @@map("brands")
+}
