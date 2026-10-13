@@ -21,7 +21,7 @@ Requirements: Node.js 20 or newer, npm 10 or newer, and Docker Compose.
 
 1. Copy `.env.example` to `.env`. Set `POSTGRES_PASSWORD` to a URL-safe alphanumeric value. Set `NEXTAUTH_SECRET` to a random string of at least 32 characters. Set `SEED_ADMIN_EMAIL` and a unique `SEED_ADMIN_PASSWORD` of at least 12 characters. Do not use the example placeholders.
 2. Run `npm install` in the repository root.
-3. Run `docker compose -f infra/compose.yaml up --build -d`. The one-time `init` service applies the checked-in migration and seeds the pilot records before web and worker start.
+3. Run `docker compose --env-file .env -f infra/compose.yaml up --build --wait`. The one-time `init` service applies the checked-in migration and seeds the pilot records before web and worker start.
 4. Open <http://localhost:3000/login> and sign in with the seed credentials. The dashboard should show Daddy Choize.
 5. Run `node --env-file=.env scripts/smoke.mjs` to check liveness, database and Redis readiness, login, and the persisted brand.
 
@@ -31,7 +31,7 @@ To run services on the host after starting PostgreSQL and Redis, run `npm run db
 
 - `npm run typecheck` checks all TypeScript workspaces.
 - `npm run build` generates Prisma Client and builds web and worker.
-- `docker compose -f infra/compose.yaml ps` shows service health.
+- `docker compose --env-file .env -f infra/compose.yaml ps` shows service health.
 
 The P0 GitHub Actions job runs the build, type checks, Compose startup, migration, seed and HTTP smoke test for each pull request.
 

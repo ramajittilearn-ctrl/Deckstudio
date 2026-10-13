@@ -31,9 +31,9 @@ jobs:
             echo "SEED_ADMIN_EMAIL=owner@example.test"
             echo "SEED_ADMIN_PASSWORD=DeckCiOwnerPassword123"
           } > .env
-      - run: docker compose -f infra/compose.yaml up --build --wait
+      - run: docker compose --env-file .env -f infra/compose.yaml up --build --wait
       - run: node --env-file=.env scripts/smoke.mjs
       - if: always()
-        run: docker compose -f infra/compose.yaml logs --no-color --tail=100
+        run: docker compose --env-file .env -f infra/compose.yaml logs --no-color --tail=100
       - if: always()
-        run: docker compose -f infra/compose.yaml down -v
+        run: docker compose --env-file .env -f infra/compose.yaml down -v
