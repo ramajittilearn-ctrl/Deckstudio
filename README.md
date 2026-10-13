@@ -1,11 +1,11 @@
 # Deck Studio
 
-Deck Studio is a Thai-first social content operations project for the Daddy Choize pilot. The repository is in **P0 foundation**. The web app can sign in a seeded owner and show the pilot workspace. It has no content generation, Telegram approval, publishing, or live analytics yet.
+Deck Studio is a Thai-first social content operations project for the Daddy Choize pilot. The repository has a public landing page and the **P0 foundation**. The web app can sign in a seeded owner and show the pilot workspace. It has no content generation, Telegram approval, publishing, or live analytics yet.
 
 ## Architecture
 
 ```text
-apps/web       Next.js App Router, owner login, dashboard and health routes
+apps/web       Public landing page, Next.js owner login, dashboard and health routes
 apps/worker    Standalone BullMQ worker with Redis-backed readiness
 packages/db    Prisma schema, SQL migration and idempotent pilot seed
 infra          Docker Compose for web, worker, PostgreSQL and Redis
@@ -22,7 +22,7 @@ Requirements: Node.js 20 or newer, npm 10 or newer, and Docker Compose.
 1. Copy `.env.example` to `.env`. Set `POSTGRES_PASSWORD` to a URL-safe alphanumeric value. Set `NEXTAUTH_SECRET` to a random string of at least 32 characters. Set `SEED_ADMIN_EMAIL` and a unique `SEED_ADMIN_PASSWORD` of at least 12 characters. Do not use the example placeholders.
 2. Run `npm install` in the repository root.
 3. Run `docker compose --env-file .env -f infra/compose.yaml up --build --wait`. The one-time `init` service applies the checked-in migration and seeds the pilot records before web and worker start.
-4. Open <http://localhost:3000/login> and sign in with the seed credentials. The dashboard should show Daddy Choize.
+4. Open <http://localhost:3000> to see the landing page. Sign in at <http://localhost:3000/login> with the seed credentials. The dashboard at `/studio` should show Daddy Choize.
 5. Run `node --env-file=.env scripts/smoke.mjs` to check liveness, database and Redis readiness, login, and the persisted brand.
 
 To run services on the host after starting PostgreSQL and Redis, run `npm run db:generate`, `npm run db:migrate`, `npm run db:seed`, `npm run dev:web`, and `npm run dev:worker` in separate terminals as appropriate.

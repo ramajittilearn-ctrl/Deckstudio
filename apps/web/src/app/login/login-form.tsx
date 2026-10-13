@@ -17,7 +17,7 @@ export default function LoginForm() {
       password: form.get("password"),
       redirect: false
     });
-    if (result?.ok) window.location.assign("/");
+    if (result?.ok) window.location.assign("/studio");
     else {
       setError("Sign in failed. Check your email and password.");
       setBusy(false);

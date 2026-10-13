@@ -1,0 +1,189 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f8f7f2">
+  <meta name="description" content="Deck Studio is a human-approved content workspace for the Daddy Choize pilot.">
+  <title>Deck Studio — Content with a human touch</title>
+  <style>
+    :root{--ink:#172926;--muted:#657570;--paper:#f8f7f2;--line:#dbe2dc;--green:#2f644e;--lime:#d5e77e;--coral:#ecaa8b;--white:#fff;--shadow:0 28px 70px rgba(25,49,41,.1)}
+    *{box-sizing:border-box}
+    html{scroll-behavior:smooth}
+    body{margin:0;background:var(--paper);color:var(--ink);font-family:Inter,"Noto Sans Thai",ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;line-height:1.55}
+    a{color:inherit;text-decoration:none}
+    button{font:inherit}
+    .wrap{width:min(1180px,calc(100% - 48px));margin:auto}
+    .site-header{position:sticky;top:0;z-index:10;background:rgba(248,247,242,.92);backdrop-filter:blur(16px);border-bottom:1px solid rgba(219,226,220,.8)}
+    .header-inner{display:flex;align-items:center;justify-content:space-between;min-height:76px;gap:24px}
+    .brand{display:flex;align-items:center;gap:11px;font-weight:800;letter-spacing:-.04em;font-size:22px;white-space:nowrap}
+    .brand-mark{display:grid;place-items:center;width:32px;height:32px;border-radius:10px;background:var(--green);color:#fff;font-size:18px;transform:rotate(-8deg)}
+    .nav{display:flex;align-items:center;gap:32px;font-size:14px;font-weight:600;color:#475b53}
+    .nav a:hover,.footer a:hover{color:var(--green)}
+    .header-cta{padding:10px 17px;border:1px solid #b8c9bd;border-radius:9px;font-size:14px;font-weight:700;white-space:nowrap}
+    .header-cta:hover{background:#e9eee8}
+    .hero{padding:94px 0 86px;overflow:hidden}
+    .hero-grid{display:grid;grid-template-columns:.94fr 1.06fr;align-items:center;gap:60px}
+    .eyebrow{display:inline-flex;align-items:center;gap:9px;padding:7px 12px;border:1px solid #cbd9cb;border-radius:99px;color:#3c6b50;background:#edf3df;font-size:11px;font-weight:800;letter-spacing:.13em;text-transform:uppercase}
+    .eyebrow:before{content:"";width:7px;height:7px;border-radius:50%;background:#82aa56}
+    h1,h2,h3,p{margin-top:0}
+    h1{font-size:clamp(48px,5.5vw,76px);line-height:1.04;letter-spacing:-.067em;margin:24px 0 22px;max-width:680px}
+    .accent{color:var(--green)}
+    .hero-copy{color:#576a61;font-size:18px;max-width:570px;line-height:1.75}
+    .actions{display:flex;align-items:center;gap:13px;flex-wrap:wrap;margin-top:31px}
+    .button{display:inline-flex;align-items:center;justify-content:center;gap:12px;padding:14px 20px;border-radius:10px;font-size:14px;font-weight:800;transition:transform .2s,background .2s}
+    .button:hover{transform:translateY(-2px)}
+    .button-primary{color:white;background:var(--green);box-shadow:0 10px 24px rgba(47,100,78,.19)}
+    .button-primary:hover{background:#24543f}
+    .button-soft{background:#e7ece5;color:#315645}
+    .hero-note{font-size:12px;color:#728079;margin-top:20px}
+    .product-scene{position:relative;min-width:0}
+    .product-scene:before{content:"";position:absolute;inset:8% -8% -9% 6%;border-radius:50%;background:radial-gradient(circle at center,#e4ead2 0,#f3eee7 60%,transparent 70%);filter:blur(15px)}
+    .window{position:relative;background:#fff;border:1px solid #dce5dd;border-radius:18px;box-shadow:var(--shadow);overflow:hidden;transform:rotate(-1.4deg)}
+    .window-top{height:47px;border-bottom:1px solid #e9eee9;display:flex;align-items:center;padding:0 17px;gap:7px;background:#fcfdfb}
+    .dot{width:7px;height:7px;border-radius:50%;background:#d2dbd2}.dot:first-child{background:#e9aaa0}.dot:nth-child(2){background:#eed6a4}
+    .window-label{margin-left:auto;color:#8a9890;font-size:10px;font-weight:700;letter-spacing:.12em}
+    .dashboard{display:grid;grid-template-columns:112px 1fr;min-height:395px}
+    .mock-side{background:#f6f8f4;border-right:1px solid #e9eee9;padding:22px 10px}
+    .mock-side strong{display:block;color:var(--green);font-size:10px;letter-spacing:.06em;margin:0 8px 25px}
+    .mock-link{font-size:9px;padding:8px;border-radius:6px;color:#8b9c91;margin-bottom:4px}
+    .mock-link.active{background:#e2eee1;color:#386e51;font-weight:800}
+    .mock-main{padding:22px 23px 26px;min-width:0}
+    .mock-head{display:flex;justify-content:space-between;align-items:start;gap:12px}
+    .mock-head h3{font-size:18px;letter-spacing:-.05em;margin:0}
+    .mock-head span{font-size:9px;color:#899990}
+    .mock-badge{font-size:9px;font-weight:800;background:#eaf2e8;color:#3e7854;border-radius:5px;padding:5px 8px;white-space:nowrap}
+    .mock-metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:18px 0}
+    .metric{border:1px solid #e8eee8;border-radius:8px;padding:10px;background:#fff}
+    .metric small{display:block;color:#84958a;font-size:8px;font-weight:700}
+    .metric b{display:block;font-size:18px;letter-spacing:-.05em;margin-top:2px}
+    .metric:last-child b{color:#bc8556}
+    .board-title{font-size:10px;font-weight:800;margin:0 0 9px}
+    .board{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+    .lane{background:#f7f9f6;border-radius:8px;padding:7px;min-width:0}
+    .lane-title{font-size:8px;color:#76897e;font-weight:800;margin:2px 0 8px}
+    .mini-card{border:1px solid #edf0ea;background:#fff;border-radius:7px;padding:6px;box-shadow:0 2px 5px rgba(20,48,35,.03)}
+    .mini-art{height:52px;border-radius:4px;display:grid;place-items:center;font-size:8px;text-align:center;line-height:1.25;color:#42533c;font-weight:800;padding:4px;background:linear-gradient(135deg,#e6dba4,#d9ead1)}
+    .mini-art.peach{background:linear-gradient(135deg,#f3c4a7,#e9e8c8)}
+    .mini-art.green{background:linear-gradient(135deg,#c2d4b4,#e4eecf)}
+    .mini-card p{font-size:8px;line-height:1.35;font-weight:700;margin:7px 0 3px}
+    .mini-card small{font-size:7px;color:#91a197}
+    .float-note{position:absolute;right:-24px;bottom:-27px;background:#fff;border:1px solid #e2e8df;border-radius:12px;padding:14px 17px;box-shadow:0 18px 35px rgba(29,50,36,.12);transform:rotate(3deg);display:flex;align-items:center;gap:12px}
+    .float-icon{width:34px;height:34px;background:#eaf5e7;color:#3a7657;border-radius:9px;display:grid;place-items:center;font-weight:900}
+    .float-note b{display:block;font-size:10px}.float-note small{font-size:9px;color:#839387}
+    .strip{border-top:1px solid var(--line);border-bottom:1px solid var(--line);background:#f2f3eb}
+    .strip-inner{display:grid;grid-template-columns:1.25fr repeat(3,1fr);gap:20px;padding:25px 0;align-items:center}
+    .strip-lead{font-size:11px;color:#718178;letter-spacing:.12em;text-transform:uppercase;font-weight:800}
+    .strip-item{font-size:13px;font-weight:700;border-left:1px solid #d5dfd3;padding-left:20px}
+    section{scroll-margin-top:90px}
+    .section{padding:104px 0}
+    .section-head{max-width:670px;margin-bottom:39px}
+    .kicker{color:#4f7c5f;font-size:11px;font-weight:900;letter-spacing:.17em;text-transform:uppercase;margin-bottom:14px}
+    h2{font-size:clamp(36px,4vw,54px);line-height:1.12;letter-spacing:-.055em;margin-bottom:16px}
+    .section-head p{color:var(--muted);font-size:16px;line-height:1.75}
+    .steps{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+    .step{background:#fff;border:1px solid #dfe7dd;border-radius:16px;padding:29px;min-height:250px}
+    .step-number{display:grid;place-items:center;width:39px;height:39px;border-radius:10px;background:#eaf0e5;color:#3b7754;font-size:12px;font-weight:900}
+    .step h3{font-size:21px;letter-spacing:-.04em;margin:28px 0 9px}
+    .step p{font-size:14px;color:#6a7970;line-height:1.7;margin-bottom:0}
+    .showcase{background:#e9eee6;padding:100px 0}
+    .showcase-grid{display:grid;grid-template-columns:.8fr 1.2fr;gap:70px;align-items:center}
+    .showcase-copy p{font-size:16px;color:#64766a;line-height:1.8}
+    .format-tabs{display:flex;gap:7px;flex-wrap:wrap;margin-top:25px}
+    .format-tabs button{border:1px solid #cbd9cb;background:transparent;color:#526a59;border-radius:8px;padding:9px 13px;font-weight:800;font-size:12px;cursor:pointer}
+    .format-tabs button[aria-selected="true"]{background:var(--green);border-color:var(--green);color:white}
+    .format-card{display:grid;grid-template-columns:.68fr 1fr;background:#fff;border:1px solid #dce6dc;border-radius:19px;overflow:hidden;box-shadow:var(--shadow);min-height:330px}
+    .format-art{display:grid;place-items:center;background:#dbe7c4;padding:28px;position:relative}
+    .poster{aspect-ratio:4/5;width:min(100%,204px);background:#f6e3bc;border:8px solid #fff;box-shadow:0 18px 30px rgba(31,57,41,.17);display:flex;flex-direction:column;justify-content:space-between;padding:18px;color:#33483a;transform:rotate(-4deg);transition:transform .25s,background .25s}
+    .poster small{font-size:8px;letter-spacing:.1em;font-weight:900}
+    .poster strong{font-size:23px;line-height:1.14;letter-spacing:-.06em}
+    .poster em{font-size:9px;font-style:normal;font-weight:700}
+    .format-detail{padding:39px 37px}
+    .format-detail .label{font-size:10px;font-weight:900;color:#568269;letter-spacing:.14em}
+    .format-detail h3{font-size:31px;letter-spacing:-.055em;margin:14px 0}
+    .format-detail p{font-size:14px;color:#68796e;line-height:1.8}
+    .format-detail .hint{font-size:11px;color:#91a096;border-top:1px solid #e8eee8;padding-top:16px;margin-top:24px}
+    .principle{padding:98px 0}
+    .principle-card{display:grid;grid-template-columns:1fr .7fr;gap:50px;align-items:center;background:#234b3b;color:white;border-radius:23px;padding:60px 70px;overflow:hidden;position:relative}
+    .principle-card:after{content:"";width:340px;height:340px;border:1px solid rgba(213,231,126,.25);border-radius:50%;position:absolute;right:-90px;top:-130px}
+    .principle-card h2{max-width:680px;margin-bottom:15px}
+    .principle-card p{color:#c8d7c9;line-height:1.75;max-width:630px}
+    .approval-visual{position:relative;z-index:1;background:#fff;border-radius:15px;padding:20px;color:#233a2e;box-shadow:0 25px 40px rgba(9,31,19,.2);transform:rotate(4deg)}
+    .approval-visual .top{display:flex;justify-content:space-between;font-size:9px;font-weight:900;color:#62846a;letter-spacing:.1em}
+    .approval-visual h3{font-size:18px;margin:18px 0 8px}
+    .approval-visual p{font-size:11px;color:#7a8d7e;margin-bottom:17px}
+    .approval-buttons{display:flex;gap:7px}.approval-buttons span{flex:1;text-align:center;border-radius:6px;padding:8px 4px;font-size:9px;font-weight:800;background:#e7f1e5;color:#366d4b}.approval-buttons span+span{background:#f3ede8;color:#8e7164}
+    .end{padding:74px 0 85px;text-align:center;border-top:1px solid var(--line)}
+    .end h2{margin:0 auto 17px;max-width:710px}
+    .end p{color:var(--muted);max-width:580px;margin:0 auto 25px}
+    .end .actions{justify-content:center}
+    .footer{border-top:1px solid var(--line);padding:26px 0;color:#809087;font-size:12px}
+    .footer-inner{display:flex;justify-content:space-between;gap:20px;align-items:center}
+    .footer a{color:#486b55}
+    @media(max-width:950px){.hero-grid,.showcase-grid{grid-template-columns:1fr;gap:55px}.hero{padding-top:72px}.hero-copy{max-width:670px}.product-scene{max-width:680px;width:100%;margin:auto}.showcase-grid{gap:36px}.principle-card{grid-template-columns:1fr;padding:48px}.approval-visual{max-width:330px}.strip-inner{grid-template-columns:repeat(2,1fr)}.strip-lead{grid-column:span 2}.strip-item{border-left:0;padding-left:0}}
+    @media(max-width:650px){.wrap{width:min(100% - 32px,1180px)}.header-inner{min-height:64px}.nav{display:none}.brand{font-size:19px}.header-cta{padding:8px 12px}.hero{padding:59px 0 70px}.hero-grid{gap:42px}h1{font-size:48px}.hero-copy{font-size:16px}.window{transform:none}.dashboard{grid-template-columns:80px 1fr;min-height:320px}.mock-side{padding:16px 5px}.mock-side strong{font-size:8px}.mock-main{padding:15px 10px}.mock-metrics{gap:4px}.metric{padding:7px}.metric b{font-size:14px}.mini-art{height:38px}.float-note{right:-5px;bottom:-30px;transform:rotate(2deg);padding:9px}.section,.principle{padding:70px 0}.steps{grid-template-columns:1fr}.step{min-height:auto}.showcase{padding:70px 0}.format-card{grid-template-columns:1fr}.format-art{min-height:250px}.poster{max-width:160px}.format-detail{padding:30px}.principle-card{padding:35px 28px}.strip-inner{gap:15px}.strip-item{font-size:11px}.footer-inner{flex-direction:column;align-items:flex-start}}
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="wrap header-inner">
+      <a class="brand" href="#top" aria-label="Deck Studio home"><span class="brand-mark">D</span> Deck Studio</a>
+      <nav class="nav" aria-label="Main navigation"><a href="#workflow">Workflow</a><a href="#formats">Formats</a><a href="#approval">Approval</a></nav>
+      <a class="header-cta" href="/login">Owner sign in <span aria-hidden="true">↗</span></a>
+    </div>
+  </header>
+  <main id="top">
+    <section class="hero">
+      <div class="wrap hero-grid">
+        <div>
+          <span class="eyebrow">Daddy Choize pilot · In development</span>
+          <h1>Good content,<br><span class="accent">with a human touch.</span></h1>
+          <p class="hero-copy">พื้นที่เดียวสำหรับวางแผน สร้าง และตรวจคอนเทนต์รายวัน ก่อนเผยแพร่จริงทุกโพสต์ต้องผ่านการอนุมัติจากคุณ</p>
+          <div class="actions"><a class="button button-primary" href="/login">Open Deck Studio <span aria-hidden="true">↗</span></a><a class="button button-soft" href="#workflow">See how it works <span aria-hidden="true">↓</span></a></div>
+          <p class="hero-note">P0 foundation is available. Content workflows shown below are a design preview.</p>
+        </div>
+        <div class="product-scene" aria-label="Illustrative Deck Studio interface preview">
+          <div class="window">
+            <div class="window-top"><i class="dot"></i><i class="dot"></i><i class="dot"></i><span class="window-label">ILLUSTRATIVE PREVIEW</span></div>
+            <div class="dashboard">
+              <aside class="mock-side"><strong>DECK STUDIO</strong><div class="mock-link active">Overview</div><div class="mock-link">Content Deck</div><div class="mock-link">Approvals</div><div class="mock-link">Calendar</div><div class="mock-link">Settings</div></aside>
+              <div class="mock-main"><div class="mock-head"><div><h3>Content Deck</h3><span>Daddy Choize · October 2026</span></div><div class="mock-badge">7-day view</div></div>
+                <div class="mock-metrics"><div class="metric"><small>Planned slots</small><b>07</b></div><div class="metric"><small>Awaiting review</small><b>02</b></div><div class="metric"><small>Ready</small><b>04</b></div></div>
+                <p class="board-title">This week's content</p><div class="board">
+                  <div class="lane"><p class="lane-title">DRAFT</p><div class="mini-card"><div class="mini-art">เตรียมของ<br>ก่อนคลอด</div><p>New parent checklist</p><small>Carousel</small></div></div>
+                  <div class="lane"><p class="lane-title">IN REVIEW</p><div class="mini-card"><div class="mini-art peach">5 นาที<br>ให้ตัวเอง</div><p>A little pause</p><small>Short video</small></div></div>
+                  <div class="lane"><p class="lane-title">APPROVED</p><div class="mini-card"><div class="mini-art green">เริ่มต้น<br>วันใหม่</div><p>Morning routine</p><small>Image</small></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="float-note"><span class="float-icon">✓</span><span><b>Human approval first</b><small>Designed for every post</small></span></div>
+        </div>
+      </div>
+    </section>
+    <div class="strip"><div class="wrap strip-inner"><span class="strip-lead">Design targets for the pilot</span><span class="strip-item">One target post each day</span><span class="strip-item">19:00 Bangkok time</span><span class="strip-item">No post without approval</span></div></div>
+    <section class="section" id="workflow"><div class="wrap"><div class="section-head"><p class="kicker">The workflow</p><h2>From idea to a ready post, in one clear flow.</h2><p>Deck Studio is being built around a simple daily rhythm. You can see what is being prepared, what needs review, and what is ready for its publishing slot.</p></div><div class="steps"><article class="step"><span class="step-number">01</span><h3>Plan the day</h3><p>Bring topics, captions, sources, and creative assets into a single content card. Keep a rolling view of the next seven days.</p></article><article class="step"><span class="step-number">02</span><h3>Review the exact version</h3><p>Inspect the media and copy together. A change creates a new version, so approval stays tied to what you actually saw.</p></article><article class="step"><span class="step-number">03</span><h3>Publish with a guard</h3><p>The planned publisher will check approval again before dispatch. If approval or access is missing, the post stays off the public feed.</p></article></div></div></section>
+    <section class="showcase" id="formats"><div class="wrap showcase-grid"><div class="showcase-copy"><p class="kicker">Creative formats</p><h2>Choose the shape that fits the story.</h2><p>The roadmap supports images, carousels, and short videos. Each format uses the same review path, with a preview of the exact content proposed for publication.</p><div class="format-tabs" role="tablist" aria-label="Preview content formats"><button type="button" role="tab" aria-selected="true" data-format="image">Image</button><button type="button" role="tab" aria-selected="false" data-format="carousel">Carousel</button><button type="button" role="tab" aria-selected="false" data-format="video">Short video</button></div></div><div class="format-card" aria-live="polite"><div class="format-art"><div class="poster" id="format-poster"><small>DADDY CHOIZE</small><strong id="poster-title">A small idea.<br>A useful day.</strong><em id="poster-foot">IMAGE POST · PREVIEW</em></div></div><div class="format-detail"><span class="label" id="format-label">FORMAT 01 / 03</span><h3 id="format-title">One clear thought</h3><p id="format-description">An image post puts one useful idea front and center, with its caption and sources attached for review.</p><p class="hint">Illustrative format preview. Generation and media export are planned for a later phase.</p></div></div></div></section>
+    <section class="principle" id="approval"><div class="wrap"><div class="principle-card"><div><p class="kicker" style="color:#d5e77e">Built around your decision</p><h2>Nothing goes live just because a job finished.</h2><p>The approval design binds a decision to a specific version, account, caption, and asset set. If any publishing detail changes, the content needs another review.</p></div><div class="approval-visual" aria-label="Illustrative approval card"><div class="top"><span>REVIEW REQUEST</span><span>PREVIEW</span></div><h3>Ready for your review</h3><p>Daddy Choize · Carousel · 19:00 ICT</p><div class="approval-buttons"><span>Approve</span><span>Request changes</span></div></div></div></div></section>
+    <section class="end"><div class="wrap"><p class="kicker">Deck Studio pilot</p><h2>A thoughtful place for your next post.</h2><p>The foundation is running. The content deck, review flow, and publishing controls are the next build stages.</p><div class="actions"><a class="button button-primary" href="/login">Owner sign in <span aria-hidden="true">↗</span></a></div></div></section>
+  </main>
+  <footer class="footer"><div class="wrap footer-inner"><span>© Deck Studio · Daddy Choize pilot</span><span>Design preview · No live publishing is enabled</span></div></footer>
+  <script>
+    const formats={
+      image:{label:"FORMAT 01 / 03",title:"One clear thought",description:"An image post puts one useful idea front and center, with its caption and sources attached for review.",poster:"A small idea.<br>A useful day.",foot:"IMAGE POST · PREVIEW",color:"#f6e3bc"},
+      carousel:{label:"FORMAT 02 / 03",title:"A story in steps",description:"A carousel gives checklists and practical guides room to breathe, one slide at a time.",poster:"Five little<br>steps forward.",foot:"CAROUSEL · PREVIEW",color:"#e9d8cf"},
+      video:{label:"FORMAT 03 / 03",title:"A moment in motion",description:"A short video can combine a script, scenes, narration, and subtitles in a reviewable package.",poster:"Make space<br>for the moment.",foot:"SHORT VIDEO · PREVIEW",color:"#d9e8d3"}
+    };
+    document.querySelectorAll("[data-format]").forEach(button=>button.addEventListener("click",()=>{
+      document.querySelectorAll("[data-format]").forEach(item=>item.setAttribute("aria-selected",String(item===button)));
+      const format=formats[button.dataset.format];
+      document.getElementById("format-label").textContent=format.label;
+      document.getElementById("format-title").textContent=format.title;
+      document.getElementById("format-description").textContent=format.description;
+      document.getElementById("poster-title").innerHTML=format.poster;
+      document.getElementById("poster-foot").textContent=format.foot;
+      document.getElementById("format-poster").style.background=format.color;
+    }));
+  </script>
+</body>
+</html>
