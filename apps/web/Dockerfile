@@ -7,7 +7,7 @@ COPY apps/worker/package.json apps/worker/package.json
 COPY packages/db/package.json packages/db/package.json
 RUN npm ci
 COPY . .
-RUN npm run db:generate && npm run build -w @deck/web
+RUN npm run build -w @deck/db && npm run build -w @deck/web
 WORKDIR /app/apps/web
 EXPOSE 3000
 CMD ["npm", "run", "start"]
