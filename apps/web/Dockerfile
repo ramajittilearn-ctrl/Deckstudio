@@ -1,4 +1,5 @@
 FROM node:22-alpine
+RUN apk add --no-cache openssl
 WORKDIR /app
 COPY package*.json tsconfig.base.json ./
 COPY apps/web/package.json apps/web/package.json
