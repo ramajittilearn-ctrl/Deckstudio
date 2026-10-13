@@ -33,6 +33,7 @@ jobs:
           } > .env
       - run: docker compose --env-file .env -f infra/compose.yaml up --build --wait
       - run: node --env-file=.env scripts/smoke.mjs
+      - run: node --env-file=.env scripts/smoke-flow.mjs
       - if: always()
         run: docker compose --env-file .env -f infra/compose.yaml logs --no-color --tail=100
       - if: always()

@@ -6,3 +6,4 @@ export const db = globalDb.deckDb ?? new PrismaClient();
 if (process.env.NODE_ENV !== "production") globalDb.deckDb = db;
 
 export { Prisma } from "@prisma/client";
+export { snapshotHash } from "./snapshot";

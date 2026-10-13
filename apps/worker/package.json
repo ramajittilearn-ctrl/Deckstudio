@@ -10,6 +10,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@deck/db": "0.1.0",
     "bullmq": "5.81.5",
     "ioredis": "5.11.1"
   },

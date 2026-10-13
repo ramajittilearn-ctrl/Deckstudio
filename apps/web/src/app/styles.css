@@ -6,6 +6,22 @@ h1 { margin-bottom: .35rem; }
 .card { background: white; border: 1px solid #d9e0d8; border-radius: 16px; padding: 1.5rem; margin-top: 1.5rem; }
 label { display: block; margin: 1rem 0 .35rem; }
 input { width: 100%; padding: .75rem; border: 1px solid #a9b8ad; border-radius: 8px; }
+textarea { width: 100%; padding: .75rem; border: 1px solid #a9b8ad; border-radius: 8px; font: inherit; resize: vertical; }
 button { margin-top: 1rem; padding: .8rem 1.2rem; border: 0; border-radius: 8px; background: #265942; color: white; cursor: pointer; }
 .muted { color: #56675b; }
 .error { color: #a22; }
+.success { color: #216844; font-weight: 600; }
+.studio { max-width: 1000px; margin: 2rem auto 5rem; }
+.studio-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem; }
+.eyebrow { color: #51745e; font-size: .75rem; font-weight: 800; letter-spacing: .12em; }
+.post-card { margin-top: 1rem; }
+.post-meta { display: flex; justify-content: space-between; align-items: center; gap: 1rem; }
+.status { border-radius: 99px; background: #e8eee8; padding: .35rem .7rem; font-size: .75rem; font-weight: 800; }
+.status-mock_published { background: #d7f0dd; }
+.status-blocked { background: #f9dddd; }
+.post-preview { display: grid; grid-template-columns: 220px 1fr; gap: 1.5rem; margin-top: 1.2rem; }
+.post-preview img { width: 100%; aspect-ratio: 1; border-radius: 12px; object-fit: cover; }
+.caption { white-space: pre-wrap; line-height: 1.6; }
+.post-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; border-top: 1px solid #d9e0d8; margin-top: 1.2rem; }
+.secondary { background: #e8eee8; color: #1c4831; }
+@media (max-width: 680px) { .studio-header, .post-meta { display: block; } .post-preview, .post-actions { grid-template-columns: 1fr; } }

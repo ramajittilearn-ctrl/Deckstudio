@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 800" role="img" aria-label="Daddy Choize sample artwork">
+  <rect width="800" height="800" fill="#e9dcbf"/>
+  <circle cx="645" cy="150" r="180" fill="#d7b879" opacity=".55"/>
+  <circle cx="120" cy="680" r="230" fill="#b6c9a9" opacity=".7"/>
+  <rect x="120" y="130" width="560" height="540" rx="32" fill="#f8f5eb"/>
+  <text x="400" y="304" text-anchor="middle" font-family="Arial,sans-serif" font-size="38" fill="#315e43" letter-spacing="5">DADDY CHOIZE</text>
+  <path d="M250 440h300" stroke="#315e43" stroke-width="4"/>
+  <text x="400" y="500" text-anchor="middle" font-family="Arial,sans-serif" font-size="27" fill="#315e43">Sample image for mock test</text>
+  <text x="400" y="548" text-anchor="middle" font-family="Arial,sans-serif" font-size="18" fill="#69816d">No social post will be sent</text>
+</svg>
