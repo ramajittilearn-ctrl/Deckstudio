@@ -48,12 +48,11 @@ let studioHtml = await dashboard.text();
 assert.match(studioHtml, /Daddy Choize/, "seeded brand visible");
 
 function formFor(html, buttonText, last = false) {
-  const button = last ? html.lastIndexOf(buttonText) : html.indexOf(buttonText);
-  assert.ok(button >= 0, `form button ${buttonText} is visible`);
-  const start = html.lastIndexOf("<form", button);
-  const end = html.indexOf("</form>", button);
-  assert.ok(start >= 0 && end > button, `form for ${buttonText} exists`);
-  const form = html.slice(start, end);
+  const matches = [...html.matchAll(/<form\b[\s\S]*?<\/form>/g)]
+    .map((match) => match[0])
+    .filter((form) => form.includes(buttonText));
+  const form = last ? matches.at(-1) : matches[0];
+  assert.ok(form, `form for ${buttonText} exists`);
   const action = form.match(/name="(\$ACTION_ID_[^"]+)"/);
   assert.ok(action, `server action for ${buttonText} exists`);
   return { html: form, action: action[1] };
