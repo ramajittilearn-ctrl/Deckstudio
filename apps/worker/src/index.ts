@@ -1,13 +1,14 @@
 import { createServer } from "node:http";
 import { Queue, Worker } from "bullmq";
 import { Redis } from "ioredis";
-import { db, snapshotHash } from "@deck/db";
+import { bangkokClock, db, ensureSevenDayBuffer, snapshotHash } from "@deck/db";
 
 const redisUrl = process.env.REDIS_URL;
 if (!redisUrl) throw new Error("REDIS_URL is required");
 
 const connection = new Redis(redisUrl, { maxRetriesPerRequest: null });
 const publishQueue = new Queue("publishing", { connection });
+const SCHEDULE_GRACE_MS = 15 * 60_000;
 
 async function mockPublish(eventId: string, slotId: string, versionId: string) {
   await db.$transaction(async (tx) => {
@@ -20,6 +21,16 @@ async function mockPublish(eventId: string, slotId: string, versionId: string) {
     if (!slot || slot.status !== "APPROVED" || slot.currentVersionId !== versionId) {
       await tx.outboxEvent.update({ where: { id: eventId }, data: { dispatchedAt: new Date() } });
       return;
+    }
+    if (slot.mode === "SCHEDULED") {
+      const now = Date.now();
+      if (slot.publishAtUtc.getTime() > now) return;
+      if (now - slot.publishAtUtc.getTime() > SCHEDULE_GRACE_MS) {
+        const changed = await tx.postSlot.updateMany({ where: { id: slotId, status: "APPROVED", currentVersionId: versionId }, data: { status: "MISSED" } });
+        if (changed.count) await tx.auditEvent.create({ data: { slotId, event: "SCHEDULED_SLOT_MISSED", details: { reason: "worker_late", publishAtUtc: slot.publishAtUtc.toISOString() } } });
+        await tx.outboxEvent.update({ where: { id: eventId }, data: { dispatchedAt: new Date() } });
+        return;
+      }
     }
     const approval = slot.approvals.find((candidate) => candidate.versionId === slot.currentVersionId);
     const hash = snapshotHash({ brandId: slot.brandId, caption: slot.currentVersion.caption, imagePath: slot.currentVersion.imagePath });
@@ -53,16 +64,52 @@ async function dispatchOutbox() {
   if (dispatching) return;
   dispatching = true;
   try {
-    const events = await db.outboxEvent.findMany({ where: { dispatchedAt: null, event: "MOCK_PUBLISH" }, orderBy: { createdAt: "asc" }, take: 20 });
+    const events = await db.outboxEvent.findMany({
+      where: { dispatchedAt: null, event: "MOCK_PUBLISH", slot: { OR: [
+        { mode: "TEST_NOW" }, { mode: "SCHEDULED", publishAtUtc: { lte: new Date() } }
+      ] } }, orderBy: { createdAt: "asc" }, take: 20
+    });
     for (const event of events) {
-      await publishQueue.add("mock-publish", { eventId: event.id, slotId: event.slotId, versionId: event.versionId }, { jobId: event.id, attempts: 3, backoff: { type: "exponential", delay: 1000 } });
+      await publishQueue.add("mock-publish", { eventId: event.id, slotId: event.slotId, versionId: event.versionId }, { jobId: event.id, attempts: 3, backoff: { type: "exponential", delay: 1000 }, removeOnComplete: true });
     }
   } finally { dispatching = false; }
 }
+
+async function markMissedScheduledSlots() {
+  const due = await db.postSlot.findMany({ where: { mode: "SCHEDULED", status: "DRAFT", publishAtUtc: { lte: new Date() } }, take: 20 });
+  for (const slot of due) {
+    await db.$transaction(async (tx) => {
+      const changed = await tx.postSlot.updateMany({ where: { id: slot.id, status: "DRAFT" }, data: { status: "MISSED" } });
+      if (changed.count) await tx.auditEvent.create({ data: { slotId: slot.id, event: "SCHEDULED_SLOT_MISSED", details: { publishAtUtc: slot.publishAtUtc.toISOString() } } });
+    });
+  }
+}
+
+let morningRefillDate = "";
+async function refillBuffer() {
+  const now = new Date();
+  const clock = bangkokClock(now);
+  if (clock.hour < 6 || morningRefillDate === clock.date) return;
+  const created = await ensureSevenDayBuffer(db, now);
+  morningRefillDate = clock.date;
+  if (created) process.stdout.write(JSON.stringify({ event: "buffer_refilled", created, date: clock.date }) + "\n");
+}
+void ensureSevenDayBuffer(db, new Date()).then((created) => {
+  if (created) process.stdout.write(JSON.stringify({ event: "buffer_bootstrapped", created }) + "\n");
+}).catch((error: unknown) => {
+  process.stderr.write(JSON.stringify({ event: "buffer_bootstrap_error", message: error instanceof Error ? error.message : String(error) }) + "\n");
+});
+const refillTimer = setInterval(() => { void refillBuffer().catch((error: unknown) => {
+  process.stderr.write(JSON.stringify({ event: "buffer_refill_error", message: error instanceof Error ? error.message : String(error) }) + "\n");
+}); }, 60_000);
 const dispatchTimer = setInterval(() => { void dispatchOutbox().catch((error: unknown) => {
   process.stderr.write(JSON.stringify({ event: "outbox_error", message: error instanceof Error ? error.message : String(error) }) + "\n");
 }); }, 2000);
+const missedTimer = setInterval(() => { void markMissedScheduledSlots().catch((error: unknown) => {
+  process.stderr.write(JSON.stringify({ event: "missed_slot_error", message: error instanceof Error ? error.message : String(error) }) + "\n");
+}); }, 2000);
 void dispatchOutbox();
+void markMissedScheduledSlots();
 const worker = new Worker(
   "system",
   async (job) => {
@@ -100,6 +147,8 @@ server.listen(3001, "0.0.0.0");
 
 async function shutdown() {
   clearInterval(dispatchTimer);
+  clearInterval(missedTimer);
+  clearInterval(refillTimer);
   server.close();
   await worker.close();
   await publishingWorker.close();
