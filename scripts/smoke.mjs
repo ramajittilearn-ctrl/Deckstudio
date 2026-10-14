@@ -66,10 +66,12 @@ function field(form, name) {
 }
 
 async function submit(form, fields) {
-  const body = new URLSearchParams({ [form.action]: "", ...fields });
+  const body = new FormData();
+  body.set(form.action, "");
+  for (const [name, value] of Object.entries(fields)) body.set(name, value);
   const response = await responseAt("/studio", {
     method: "POST",
-    headers: { "content-type": "application/x-www-form-urlencoded", cookie: sessionCookies },
+    headers: { cookie: sessionCookies, origin: new URL(base).origin },
     body
   });
   assert.ok(response.status === 200 || response.status === 303, `server action accepted form: ${response.status}`);
@@ -82,24 +84,24 @@ const targetDate = new Date(Date.UTC(2102, 0, 1 + Math.floor(Math.random() * 100
 studioHtml = await submit(formFor(studioHtml, "Create draft"), {
   targetDate, caption: "Daddy Choize UI smoke draft"
 });
-assert.match(studioHtml, /Daddy Choize UI smoke draft/, "created draft is visible");
+assert.ok(studioHtml.includes("Daddy Choize UI smoke draft"), "created draft is visible");
 
 const revision = formFor(studioHtml, "Save new version");
 studioHtml = await submit(revision, {
   slotId: field(revision.html, "slotId"), caption: "Daddy Choize UI smoke approved version"
 });
-assert.match(studioHtml, /Daddy Choize UI smoke approved version/, "revised version is visible");
-assert.match(studioHtml, /Version 2/, "revision created a new version");
+assert.ok(studioHtml.includes("Daddy Choize UI smoke approved version"), "revised version is visible");
+assert.ok(studioHtml.includes("Version 2"), "revision created a new version");
 
 const approval = formFor(studioHtml, "Approve and run mock test");
 studioHtml = await submit(approval, {
   slotId: field(approval.html, "slotId"), versionId: field(approval.html, "versionId")
 });
-assert.match(studioHtml, /APPROVED|MOCK PUBLISHED/, "approval changed post status");
+assert.ok(/APPROVED|MOCK PUBLISHED/.test(studioHtml), "approval changed post status");
 for (let attempt = 0; attempt < 40 && !studioHtml.includes("MOCK PUBLISHED"); attempt++) {
   await delay(500);
   const page = await responseAt("/studio", { headers: { cookie: sessionCookies } });
   studioHtml = await page.text();
 }
-assert.match(studioHtml, /Mock publish recorded as mock-/, "owner sees the mock publishing result");
+assert.ok(studioHtml.includes("Mock publish recorded as mock-"), "owner sees the mock publishing result");
 process.stdout.write("UI smoke checks passed: login, create draft, revise, approve, mock result.\n");
