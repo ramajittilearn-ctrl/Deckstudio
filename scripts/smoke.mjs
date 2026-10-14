@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { setTimeout as delay } from "node:timers/promises";
 
 const base = process.env.NEXTAUTH_URL ?? "http://localhost:3000";
 const email = process.env.SEED_ADMIN_EMAIL;
@@ -43,5 +44,62 @@ assert.equal(landing.status, 200, "public landing page");
 assert.match(await landing.text(), /Good content,/, "landing content");
 const dashboard = await responseAt("/studio", { headers: { cookie: sessionCookies } });
 assert.equal(dashboard.status, 200, "authenticated dashboard");
-assert.match(await dashboard.text(), /Daddy Choize/, "seeded brand visible");
-process.stdout.write("P0 smoke checks passed: live, ready, owner login, dashboard.\n");
+let studioHtml = await dashboard.text();
+assert.match(studioHtml, /Daddy Choize/, "seeded brand visible");
+
+function formFor(html, buttonText) {
+  const button = html.indexOf(buttonText);
+  assert.ok(button >= 0, `form button ${buttonText} is visible`);
+  const start = html.lastIndexOf("<form", button);
+  const end = html.indexOf("</form>", button);
+  assert.ok(start >= 0 && end > button, `form for ${buttonText} exists`);
+  const form = html.slice(start, end);
+  const action = form.match(/name="(\$ACTION_ID_[^"]+)"/);
+  assert.ok(action, `server action for ${buttonText} exists`);
+  return { html: form, action: action[1] };
+}
+
+function field(form, name) {
+  const match = form.match(new RegExp(`name="${name}" value="([^"]+)"`));
+  assert.ok(match, `form contains ${name}`);
+  return match[1];
+}
+
+async function submit(form, fields) {
+  const body = new URLSearchParams({ [form.action]: "", ...fields });
+  const response = await responseAt("/studio", {
+    method: "POST",
+    headers: { "content-type": "application/x-www-form-urlencoded", cookie: sessionCookies },
+    body
+  });
+  assert.ok(response.status === 200 || response.status === 303, `server action accepted form: ${response.status}`);
+  const page = await responseAt("/studio", { headers: { cookie: sessionCookies } });
+  assert.equal(page.status, 200, "studio remains accessible after action");
+  return page.text();
+}
+
+const targetDate = new Date(Date.UTC(2102, 0, 1 + Math.floor(Math.random() * 1000))).toISOString().slice(0, 10);
+studioHtml = await submit(formFor(studioHtml, "Create draft"), {
+  targetDate, caption: "Daddy Choize UI smoke draft"
+});
+assert.match(studioHtml, /Daddy Choize UI smoke draft/, "created draft is visible");
+
+const revision = formFor(studioHtml, "Save new version");
+studioHtml = await submit(revision, {
+  slotId: field(revision.html, "slotId"), caption: "Daddy Choize UI smoke approved version"
+});
+assert.match(studioHtml, /Daddy Choize UI smoke approved version/, "revised version is visible");
+assert.match(studioHtml, /Version 2/, "revision created a new version");
+
+const approval = formFor(studioHtml, "Approve and run mock test");
+studioHtml = await submit(approval, {
+  slotId: field(approval.html, "slotId"), versionId: field(approval.html, "versionId")
+});
+assert.match(studioHtml, /APPROVED|MOCK PUBLISHED/, "approval changed post status");
+for (let attempt = 0; attempt < 40 && !studioHtml.includes("MOCK PUBLISHED"); attempt++) {
+  await delay(500);
+  const page = await responseAt("/studio", { headers: { cookie: sessionCookies } });
+  studioHtml = await page.text();
+}
+assert.match(studioHtml, /Mock publish recorded as mock-/, "owner sees the mock publishing result");
+process.stdout.write("UI smoke checks passed: login, create draft, revise, approve, mock result.\n");
