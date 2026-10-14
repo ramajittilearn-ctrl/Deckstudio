@@ -91,7 +91,7 @@ studioHtml = await submit(revision, {
   slotId: field(revision.html, "slotId"), caption: "Daddy Choize UI smoke approved version"
 });
 assert.ok(studioHtml.includes("Daddy Choize UI smoke approved version"), "revised version is visible");
-assert.ok(studioHtml.includes("Version 2"), "revision created a new version");
+assert.ok(/Version\s*(?:<!-- -->)?2/.test(studioHtml), "revision created a new version");
 
 const approval = formFor(studioHtml, "Approve and run mock test");
 studioHtml = await submit(approval, {
@@ -103,5 +103,5 @@ for (let attempt = 0; attempt < 40 && !studioHtml.includes("MOCK PUBLISHED"); at
   const page = await responseAt("/studio", { headers: { cookie: sessionCookies } });
   studioHtml = await page.text();
 }
-assert.ok(studioHtml.includes("Mock publish recorded as mock-"), "owner sees the mock publishing result");
+assert.ok(/Mock publish recorded as (?:<!-- -->)?mock-/.test(studioHtml), "owner sees the mock publishing result");
 process.stdout.write("UI smoke checks passed: login, create draft, revise, approve, mock result.\n");
