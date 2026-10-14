@@ -1,0 +1,173 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserStatus {
+  ACTIVE
+  DISABLED
+}
+
+enum MembershipRole {
+  OWNER
+  EDITOR
+  REVIEWER
+}
+
+model User {
+  id           String           @id @default(cuid())
+  email        String           @unique
+  passwordHash String           @map("password_hash")
+  status       UserStatus       @default(ACTIVE)
+  createdAt    DateTime         @default(now()) @map("created_at")
+  memberships  UserMembership[]
+  approvals    Approval[]
+
+  @@map("users")
+}
+
+model Workspace {
+  id          String           @id @default(cuid())
+  name        String
+  createdAt   DateTime         @default(now()) @map("created_at")
+  memberships UserMembership[]
+  brands      Brand[]
+
+  @@map("workspaces")
+}
+
+model UserMembership {
+  userId      String         @map("user_id")
+  workspaceId String         @map("workspace_id")
+  role        MembershipRole
+  user        User           @relation(fields: [userId], references: [id])
+  workspace   Workspace      @relation(fields: [workspaceId], references: [id])
+
+  @@id([userId, workspaceId])
+  @@map("user_memberships")
+}
+
+model Brand {
+  id          String    @id @default(cuid())
+  workspaceId String    @map("workspace_id")
+  name        String
+  locale      String    @default("th-TH")
+  timezone    String    @default("Asia/Bangkok")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  workspace   Workspace @relation(fields: [workspaceId], references: [id])
+  contentItems ContentItem[]
+  slots       PostSlot[]
+
+  @@unique([workspaceId, name])
+  @@map("brands")
+}
+
+enum SlotStatus {
+  DRAFT
+  APPROVED
+  PUBLISHING
+  MOCK_PUBLISHED
+  BLOCKED
+}
+
+enum ApprovalStatus {
+  APPROVED
+  SUPERSEDED
+}
+
+model ContentItem {
+  id        String @id @default(cuid())
+  brandId   String @map("brand_id")
+  brand     Brand @relation(fields: [brandId], references: [id])
+  versions  ContentVersion[]
+  slot      PostSlot?
+  createdAt DateTime @default(now()) @map("created_at")
+  @@map("content_items")
+}
+
+model ContentVersion {
+  id           String @id @default(cuid())
+  contentItemId String @map("content_item_id")
+  versionNo    Int @map("version_no")
+  caption      String
+  imagePath    String @map("image_path")
+  snapshotHash String @map("snapshot_hash")
+  createdAt    DateTime @default(now()) @map("created_at")
+  contentItem  ContentItem @relation(fields: [contentItemId], references: [id])
+  slots        PostSlot[]
+  approvals    Approval[]
+  @@unique([contentItemId, versionNo])
+  @@map("content_versions")
+}
+
+model PostSlot {
+  id               String @id @default(cuid())
+  brandId          String @map("brand_id")
+  targetLocalDate  String @map("target_local_date")
+  contentItemId    String @unique @map("content_item_id")
+  currentVersionId String @map("current_version_id")
+  status           SlotStatus @default(DRAFT)
+  brand            Brand @relation(fields: [brandId], references: [id])
+  contentItem      ContentItem @relation(fields: [contentItemId], references: [id])
+  currentVersion   ContentVersion @relation(fields: [currentVersionId], references: [id])
+  approvals        Approval[]
+  attempts         PublishAttempt[]
+  createdAt        DateTime @default(now()) @map("created_at")
+  @@unique([brandId, targetLocalDate])
+  @@map("post_slots")
+}
+
+model Approval {
+  id            String @id @default(cuid())
+  slotId        String @map("slot_id")
+  versionId     String @map("version_id")
+  actorId       String @map("actor_id")
+  snapshotHash  String @map("snapshot_hash")
+  status        ApprovalStatus @default(APPROVED)
+  createdAt     DateTime @default(now()) @map("created_at")
+  slot          PostSlot @relation(fields: [slotId], references: [id])
+  version       ContentVersion @relation(fields: [versionId], references: [id])
+  actor         User @relation(fields: [actorId], references: [id])
+  attempts      PublishAttempt[]
+  @@unique([slotId, versionId])
+  @@map("approvals")
+}
+
+model PublishAttempt {
+  id             String @id @default(cuid())
+  slotId         String @unique @map("slot_id")
+  approvalId     String @map("approval_id")
+  idempotencyKey String @unique @map("idempotency_key")
+  status         String
+  mockPostId     String? @map("mock_post_id")
+  createdAt      DateTime @default(now()) @map("created_at")
+  slot           PostSlot @relation(fields: [slotId], references: [id])
+  approval       Approval @relation(fields: [approvalId], references: [id])
+  @@map("publish_attempts")
+}
+
+model AuditEvent {
+  id         String @id @default(cuid())
+  actorId    String? @map("actor_id")
+  slotId     String @map("slot_id")
+  event      String
+  details    Json
+  createdAt  DateTime @default(now()) @map("created_at")
+  @@index([slotId, createdAt])
+  @@map("audit_events")
+}
+
+model OutboxEvent {
+  id          String @id @default(cuid())
+  slotId      String @map("slot_id")
+  versionId   String @map("version_id")
+  event       String
+  dispatchedAt DateTime? @map("dispatched_at")
+  createdAt   DateTime @default(now()) @map("created_at")
+  @@index([dispatchedAt, createdAt])
+  @@map("outbox_events")
+}

@@ -1,0 +1,5 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": { "types": ["node"], "module": "CommonJS", "moduleResolution": "Node", "noEmit": false, "declaration": true, "outDir": "dist", "rootDir": "src" },
+  "include": ["src/**/*.ts"]
+}

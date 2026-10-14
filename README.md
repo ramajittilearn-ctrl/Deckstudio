@@ -1,48 +1,50 @@
-# Deck Studio — Social Media Bot Army
+# Deck Studio
 
-**Status:** Specification and Codex handoff only. Application code has not been implemented or deployed.
+Deck Studio is a Thai-first social content operations project for the Daddy Choize pilot. The repository has a public landing page, owner login, and a **single-image mock publishing test**. The test does not contact Facebook or create a public post. It has no AI content generation, Telegram approval, or live analytics yet.
 
-An independent, Codex-first Social Media Automation platform for the Daddy Choize pilot: one approved post per day at **19:00 Asia/Bangkok**, with AI format selection (image, carousel, short video), Deck Studio, Telegram approval, and safe publishing adapters.
+## Architecture
 
-## Start here (Codex)
-1. Read [MVP Technical Specification](docs/MVP_TECH_SPEC.md) completely.
-2. Read [Master Blueprint](docs/MASTER_BLUEPRINT.md) for product context and scope.
-3. Follow [Codex Master Implementation Prompt](docs/CODEX_MASTER_PROMPT.md).
-4. **Implement Phase P0 only** first. Inspect the repository, create the app/worker scaffold, database and local Docker environment, run tests, and report results before proceeding to P1.
-5. Follow [AGENTS.md](AGENTS.md) for project-wide coding rules.
+```text
+apps/web       Landing page, owner login, Content Deck and health routes
+apps/worker    BullMQ system and mock publishing workers; outbox dispatcher
+packages/db    Prisma schema, migrations, snapshot hashing and pilot seed
+infra          Docker Compose for web, worker, PostgreSQL and Redis
+scripts        HTTP smoke test for health and owner login
+docs           Product and implementation specifications
+```
 
-## Target architecture
+The test persists content versions, one slot per brand and Bangkok date, owner approval, an outbox event, a mock publish attempt, and audit events. Saving a revision creates a new version and supersedes prior approval. The worker checks the active owner, version, caption, local sample image checksum, and approval again before recording a mock result. No job has a live publisher adapter.
 
-- Next.js + TypeScript + Tailwind/shadcn/ui for Deck Studio
-- PostgreSQL + Prisma for data, immutable content versions and audit
-- Redis + BullMQ + standalone worker for daily jobs and retries
-- OpenAI-powered content pipeline with optional Claude provider abstraction
-- S3-compatible storage, FFmpeg and TTS for creative assets
-- Telegram Bot API for secure human approval
-- Mock publisher first; real social platform APIs only after applicable permissions, account linkage and consent
+## Local setup
 
-## Operating principles
+Requirements: Node.js 20 or newer, npm 10 or newer, and Docker Compose.
 
-- **Human approval is mandatory** before any live publishing.
-- Approved versions are immutable; changes require new approval.
-- If no approved content exists, do not auto-publish.
-- Use one target post per day, a rolling seven-day content buffer and Asia/Bangkok scheduling.
-- No hardcoded secrets; use `.env.example`, never commit real credentials.
-- Do not claim a feature is working until it has been implemented and tested.
-- The referenced YouTube video was not fully verified; this project is an independently designed blueprint, **not** the channel owner's proprietary template.
+1. Copy `.env.example` to `.env`. Set `POSTGRES_PASSWORD` to a URL-safe alphanumeric value. Set `NEXTAUTH_SECRET` to a random string of at least 32 characters. Set `SEED_ADMIN_EMAIL` and a unique `SEED_ADMIN_PASSWORD` of at least 12 characters. Do not use the example placeholders.
+2. Run `npm install` in the repository root.
+3. Run `docker compose --env-file .env -f infra/compose.yaml up --build --wait`. The one-time `init` service applies the checked-in migration and seeds the pilot records before web and worker start.
+4. Open <http://localhost:3000> to see the landing page. Sign in at <http://localhost:3000/login> with the seed credentials. At `/studio`, create a draft for a Bangkok date, revise its caption if needed, and select **Approve and run mock test**. Refresh the page after a few seconds to see `MOCK_PUBLISHED` and a `mock-...` ID. This is a local record only.
+5. Run `node --env-file=.env scripts/smoke.mjs` to check liveness, database and Redis readiness, login, and the persisted brand.
+6. Run `node --env-file=.env scripts/smoke-flow.mjs` to exercise the worker against unapproved, approved, duplicate, and changed-snapshot mock posts. It creates test records in the local database.
 
-## Documentation
+To run services on the host after starting PostgreSQL and Redis, run `npm run db:generate`, `npm run db:migrate`, `npm run db:seed`, `npm run dev:web`, and `npm run dev:worker` in separate terminals as appropriate.
 
-| File | Purpose |
-|---|---|
-| [docs/MASTER_BLUEPRINT.md](docs/MASTER_BLUEPRINT.md) | Consolidated project vision and full Bot Army discussion |
-| [docs/MVP_TECH_SPEC.md](docs/MVP_TECH_SPEC.md) | Detailed MVP, architecture, data model, approval security, tests and phases |
-| [docs/CODEX_MASTER_PROMPT.md](docs/CODEX_MASTER_PROMPT.md) | Copy-and-paste phased Codex implementation prompt |
+## Development checks
 
-## Current progress
+- `npm run typecheck` checks all TypeScript workspaces.
+- `npm run build` generates Prisma Client and builds web and worker.
+- `docker compose --env-file .env -f infra/compose.yaml ps` shows service health.
 
-- [x] Requirements and architecture documents
-- [ ] P0: Repository scaffold, database, Docker, health checks
-- [ ] P1–P7: Deck Studio UI, AI pipeline, media rendering, approval, publishing, testing
+The GitHub Actions job runs the build, type checks, Compose startup, migration, seed, HTTP smoke test, and mock publishing flow smoke test for each pull request.
 
-> This repository does not contain a finished application yet.
+The checked-in migrations create the foundation and mock test tables. The seed is safe to rerun for the same email and workspace. It updates the owner's password from the current environment and preserves existing brand and workspace records.
+
+## Limits
+
+- This is one manual image-post rehearsal. It does not create a seven-day buffer or wait until 19:00; approval triggers the mock run immediately. The date is a target label.
+- No social account, Telegram bot, AI provider, media storage or publishing credential is configured.
+- The sample image is local; editing the image file after approval changes its checksum and blocks the mock publish. User image uploads are not implemented.
+- Failed BullMQ jobs need operator inspection and recovery. This test has no production reconciliation or alerting.
+- The `postgres` and `redis` ports are exposed for local development. Restrict them before deployment.
+- TLS, backups, monitoring, and production secret management are future deployment work.
+
+Read [the MVP specification](docs/MVP_TECH_SPEC.md), [the blueprint](docs/MASTER_BLUEPRINT.md), and [the phase prompt](docs/CODEX_MASTER_PROMPT.md) before implementing P1.

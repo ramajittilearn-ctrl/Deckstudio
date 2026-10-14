@@ -1,0 +1,17 @@
+{
+  "name": "deckstudio",
+  "private": true,
+  "version": "0.1.0",
+  "workspaces": ["apps/*", "packages/*"],
+  "scripts": {
+    "dev:web": "npm run dev -w @deck/web",
+    "dev:worker": "npm run dev -w @deck/worker",
+    "build": "npm run build -w @deck/db && npm run build -w @deck/web && npm run build -w @deck/worker",
+    "typecheck": "npm run typecheck -w @deck/db && npm run typecheck -w @deck/web && npm run typecheck -w @deck/worker",
+    "db:generate": "npm run generate -w @deck/db",
+    "db:migrate": "npm run migrate -w @deck/db",
+    "db:seed": "npm run seed -w @deck/db"
+  },
+  "engines": { "node": ">=20" },
+  "overrides": { "next": "16.4.0", "postcss": "8.5.23" }
+}
