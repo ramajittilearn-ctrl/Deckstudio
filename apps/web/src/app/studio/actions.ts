@@ -36,7 +36,7 @@ export async function createDraft(form: FormData) {
       snapshotHash: snapshotHash({ brandId: brand.id, caption, imagePath })
     } });
     const slot = await tx.postSlot.create({ data: {
-      brandId: brand.id, targetLocalDate, contentItemId: item.id, currentVersionId: version.id
+      brandId: brand.id, targetLocalDate, mode: "TEST_NOW", publishAtUtc: new Date(), contentItemId: item.id, currentVersionId: version.id
     } });
     await tx.auditEvent.create({ data: { actorId: owner.userId, slotId: slot.id, event: "DRAFT_CREATED", details: { versionId: version.id } } });
   });
@@ -54,6 +54,7 @@ export async function reviseDraft(form: FormData) {
       include: { currentVersion: true }
     });
     if (!slot || slot.status === "PUBLISHING" || slot.status === "MOCK_PUBLISHED") throw new Error("This slot cannot be revised.");
+    if (slot.mode === "SCHEDULED" && slot.publishAtUtc <= new Date()) throw new Error("This scheduled slot has passed its 19:00 Bangkok target.");
     const next = await tx.contentVersion.create({ data: {
       contentItemId: slot.contentItemId, versionNo: slot.currentVersion.versionNo + 1,
       caption, imagePath, snapshotHash: snapshotHash({ brandId: slot.brandId, caption, imagePath })
@@ -80,6 +81,7 @@ export async function approveDraft(form: FormData) {
       include: { currentVersion: true }
     });
     if (!slot || slot.status !== "DRAFT" || slot.currentVersionId !== versionId) throw new Error("Reload the current draft before approval.");
+    if (slot.mode === "SCHEDULED" && slot.publishAtUtc <= new Date()) throw new Error("This scheduled slot has passed its 19:00 Bangkok target.");
     const expected = snapshotHash({ brandId: slot.brandId, caption: slot.currentVersion.caption, imagePath: slot.currentVersion.imagePath });
     if (expected !== slot.currentVersion.snapshotHash) throw new Error("The snapshot is invalid.");
     const changed = await tx.postSlot.updateMany({ where: { id: slotId, status: "DRAFT", currentVersionId: versionId }, data: { status: "APPROVED" } });

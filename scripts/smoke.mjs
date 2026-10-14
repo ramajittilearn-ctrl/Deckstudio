@@ -47,13 +47,12 @@ assert.equal(dashboard.status, 200, "authenticated dashboard");
 let studioHtml = await dashboard.text();
 assert.match(studioHtml, /Daddy Choize/, "seeded brand visible");
 
-function formFor(html, buttonText) {
-  const button = html.indexOf(buttonText);
-  assert.ok(button >= 0, `form button ${buttonText} is visible`);
-  const start = html.lastIndexOf("<form", button);
-  const end = html.indexOf("</form>", button);
-  assert.ok(start >= 0 && end > button, `form for ${buttonText} exists`);
-  const form = html.slice(start, end);
+function formFor(html, buttonText, last = false) {
+  const matches = [...html.matchAll(/<form\b[\s\S]*?<\/form>/g)]
+    .map((match) => match[0])
+    .filter((form) => form.includes(buttonText));
+  const form = last ? matches.at(-1) : matches[0];
+  assert.ok(form, `form for ${buttonText} exists`);
   const action = form.match(/name="(\$ACTION_ID_[^"]+)"/);
   assert.ok(action, `server action for ${buttonText} exists`);
   return { html: form, action: action[1] };
@@ -86,7 +85,7 @@ studioHtml = await submit(formFor(studioHtml, "Create draft"), {
 });
 assert.ok(studioHtml.includes("Daddy Choize UI smoke draft"), "created draft is visible");
 
-const revision = formFor(studioHtml, "Save new version");
+const revision = formFor(studioHtml, "Save new version", true);
 studioHtml = await submit(revision, {
   slotId: field(revision.html, "slotId"), caption: "Daddy Choize UI smoke approved version"
 });
@@ -104,4 +103,9 @@ for (let attempt = 0; attempt < 40 && !studioHtml.includes("MOCK PUBLISHED"); at
   studioHtml = await page.text();
 }
 assert.ok(/Mock publish recorded as (?:<!-- -->)?mock-/.test(studioHtml), "owner sees the mock publishing result");
-process.stdout.write("UI smoke checks passed: login, create draft, revise, approve, mock result.\n");
+const scheduledApproval = formFor(studioHtml, "Approve for 19:00 mock");
+studioHtml = await submit(scheduledApproval, {
+  slotId: field(scheduledApproval.html, "slotId"), versionId: field(scheduledApproval.html, "versionId")
+});
+assert.ok(studioHtml.includes("Approved; mock publish waits until"), "scheduled approval waits for its future slot");
+process.stdout.write("UI smoke checks passed: login, manual draft/revision/approval/mock result, scheduled approval.\n");
